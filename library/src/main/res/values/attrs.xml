@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="WaveLineView">
+        <!--backgroundColor
+        color of the view's background -->
+
+        <!--lineColor
+        color of the wave lines -->
+
+        <!--thickLineWidth
+        the center thickLines' stroke width-->
+
+        <!--fineLineWidth
+        the three fineLines's stroke width-->
+
+        <!--moveSpeed
+        the wave line animation move speed from left to right
+        you can use negative number to make the animation from right to left
+        the default value is 290F,the smaller, the faster
+        -->
+
+        <!--samplingSize
+        The number of sampling points, the higher the more fine,
+        but higher than a certain limit the naked eye is difficult
+        to distinguish, the higher the lower the efficiency of rendering
+        -->
+
+        <!--sensibility
+       Sensitivity, the bigger the more sensitive [1,10]
+       the default value is 5
+       -->
+        <attr name="backgroundColor" format="color"/>
+        <attr name="lineColor" format="color"/>
+        <attr name="thickLineWidth" format="dimension"/>
+        <attr name="fineLineWidth" format="dimension"/>
+        <attr name="moveSpeed" format="float"/>
+        <attr name="samplingSize" format="integer"/>
+        <attr name="sensibility" format="integer"/>
+    </declare-styleable>
+</resources>
