@@ -29,12 +29,12 @@
        Sensitivity, the bigger the more sensitive [1,10]
        the default value is 5
        -->
-        <attr name="backgroundColor" format="color"/>
-        <attr name="lineColor" format="color"/>
-        <attr name="thickLineWidth" format="dimension"/>
-        <attr name="fineLineWidth" format="dimension"/>
-        <attr name="moveSpeed" format="float"/>
-        <attr name="samplingSize" format="integer"/>
-        <attr name="sensibility" format="integer"/>
+        <attr name="wlvBackgroundColor" format="color"/>
+        <attr name="wlvLineColor" format="color"/>
+        <attr name="wlvThickLineWidth" format="dimension"/>
+        <attr name="wlvFineLineWidth" format="dimension"/>
+        <attr name="wlvMoveSpeed" format="float"/>
+        <attr name="wlvSamplingSize" format="integer"/>
+        <attr name="wlvSensibility" format="integer"/>
     </declare-styleable>
 </resources>

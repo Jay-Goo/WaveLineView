@@ -112,13 +112,13 @@ public class WaveLineView extends RenderView {
 
     private void initAttr(AttributeSet attrs) {
         TypedArray t = getContext().obtainStyledAttributes(attrs,R.styleable.WaveLineView);
-        backGroundColor = t.getColor(R.styleable.WaveLineView_backgroundColor, Color.WHITE);
-        samplingSize = t.getInt(R.styleable.WaveLineView_samplingSize, DEFAULT_SAMPLING_SIZE);
-        lineColor = t.getColor(R.styleable.WaveLineView_lineColor, Color.parseColor("#2ED184"));
-        thickLineWidth = (int)t.getDimension(R.styleable.WaveLineView_thickLineWidth, 6);
-        fineLineWidth = (int)t.getDimension(R.styleable.WaveLineView_fineLineWidth, 2);
-        offsetSpeed = t.getFloat(R.styleable.WaveLineView_moveSpeed, DEFAULT_OFFSET_SPEED);
-        sensibility = t.getInt(R.styleable.WaveLineView_sensibility, DEFAULT_SENSIBILITY);
+        backGroundColor = t.getColor(R.styleable.WaveLineView_wlvBackgroundColor, Color.WHITE);
+        samplingSize = t.getInt(R.styleable.WaveLineView_wlvSamplingSize, DEFAULT_SAMPLING_SIZE);
+        lineColor = t.getColor(R.styleable.WaveLineView_wlvLineColor, Color.parseColor("#2ED184"));
+        thickLineWidth = (int)t.getDimension(R.styleable.WaveLineView_wlvThickLineWidth, 6);
+        fineLineWidth = (int)t.getDimension(R.styleable.WaveLineView_wlvFineLineWidth, 2);
+        offsetSpeed = t.getFloat(R.styleable.WaveLineView_wlvMoveSpeed, DEFAULT_OFFSET_SPEED);
+        sensibility = t.getInt(R.styleable.WaveLineView_wlvSensibility, DEFAULT_SENSIBILITY);
         t.recycle();
         checkVolumeValue();
         checkSensibilityValue();
