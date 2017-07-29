@@ -9,17 +9,12 @@
     tools:context="jaygoo.wavelineview.MainActivity">
 
 
-    <!--<jaygoo.widget.wlv.WaveLineView-->
-        <!--android:id="@+id/waveLineView"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="120dp"-->
-        <!--/>-->
-
-    <jaygoo.wavelineview.WaveMp3Recorder
+    <jaygoo.widget.wlv.WaveLineView
         android:id="@+id/waveLineView"
         android:layout_width="match_parent"
-        android:layout_height="130dp"
+        android:layout_height="120dp"
         />
+
 
     <Button
         android:id="@+id/startBtn"
