@@ -345,7 +345,7 @@ public class WaveLineView extends RenderView {
         if(recessionFuncs.indexOfKey(keyX) >= 0 ){
             recessionFunc = recessionFuncs.get(keyX);
         }else {
-            recessionFunc = Math.pow(4 / (4 + Math.pow(mapX, 4)), 1);
+            recessionFunc = 4 / (4 + Math.pow(mapX, 4));
             recessionFuncs.put(keyX,recessionFunc);
         }
         return sinFunc * recessionFunc ;
