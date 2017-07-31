@@ -103,11 +103,12 @@ public abstract class RenderView extends SurfaceView implements SurfaceHolder.Ca
                         }
 
                     }
-                    try {
-                        Thread.sleep(SLEEP_TIME);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+
+                }
+                try {
+                    Thread.sleep(SLEEP_TIME);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
 
             }
