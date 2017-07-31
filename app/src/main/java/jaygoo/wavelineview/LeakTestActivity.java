@@ -1,15 +1,21 @@
 package jaygoo.wavelineview;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 
 import jaygoo.widget.wlv.WaveLineView;
 
-public class MainActivity extends AppCompatActivity {
-
+/**
+ * ================================================
+ * 作    者：JayGoo
+ * 版    本：
+ * 创建日期：2017/7/31
+ * 描    述:
+ * ================================================
+ */
+public class LeakTestActivity extends Activity{
     private WaveLineView waveLineView;
 
     @Override
@@ -37,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 finish();
-                startActivity(new Intent(MainActivity.this,LeakTestActivity.class));
+                startActivity(new Intent(LeakTestActivity.this,MainActivity.class));
             }
         });
     }

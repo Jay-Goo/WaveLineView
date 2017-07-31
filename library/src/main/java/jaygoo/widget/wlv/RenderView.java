@@ -3,10 +3,10 @@ package jaygoo.widget.wlv;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
+import java.lang.ref.WeakReference;
 import java.util.List;
 /**
  * ================================================
@@ -33,30 +33,36 @@ public abstract class RenderView extends SurfaceView implements SurfaceHolder.Ca
         getHolder().addCallback(this);
     }
 
-    /*回调/线程*/
 
-    private class RenderThread extends Thread {
+    /*回调/线程*/
+    private static class RenderThread extends Thread {
 
         private static final long SLEEP_TIME = 16;
-
-        private SurfaceHolder surfaceHolder;
+        private WeakReference<RenderView> renderView;
         private boolean running = false;
         private boolean destoryed = false;
         private boolean isPause = false;
-        public RenderThread(SurfaceHolder holder) {
+        public RenderThread(RenderView renderView) {
             super("RenderThread");
-            surfaceHolder = holder;
+            this.renderView = new WeakReference<>(renderView);
+        }
+
+        private SurfaceHolder getSurfaceHolder(){
+            if (getRenderView() != null ){
+                return getRenderView().getHolder();
+            }
+            return null;
+        }
+
+        private RenderView getRenderView(){
+            return renderView.get();
         }
 
         @Override
         public void run() {
             long startAt = System.currentTimeMillis();
-            while (true) {
+            while (!destoryed) {
                 synchronized (surfaceLock) {
-
-                    if (destoryed){
-                        return;
-                    }
 
                     //这里并没有真正的结束Thread，防止部分手机连续调用同一Thread出错
                     while (isPause){
@@ -68,20 +74,28 @@ public abstract class RenderView extends SurfaceView implements SurfaceHolder.Ca
                     }
 
                     if (running) {
-                        Canvas canvas = surfaceHolder.lockCanvas();
-                        if (canvas != null) {
-                            render(canvas, System.currentTimeMillis() - startAt);  //这里做真正绘制的事情
-                            surfaceHolder.unlockCanvasAndPost(canvas);
+                        if (getSurfaceHolder() != null && getRenderView() != null) {
+                            Canvas canvas = getSurfaceHolder().lockCanvas();
+                            if (canvas != null) {
+                                getRenderView().render(canvas, System.currentTimeMillis() - startAt);  //这里做真正绘制的事情
+                                getSurfaceHolder().unlockCanvasAndPost(canvas);
+                            }
+                        }else {
+                            running = false;
+                        }
+                        try {
+                            Thread.sleep(SLEEP_TIME);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
                         }
                     }
-                    try {
-                        Thread.sleep(SLEEP_TIME);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+
                 }
+
             }
+
         }
+
 
         public void setRun(boolean isRun) {
             this.running = isRun;
@@ -89,7 +103,7 @@ public abstract class RenderView extends SurfaceView implements SurfaceHolder.Ca
 
     }
 
-    private final Object surfaceLock = new Object();
+    private final static Object surfaceLock = new Object();
     private RenderThread renderThread;
 
     @Override
@@ -99,7 +113,7 @@ public abstract class RenderView extends SurfaceView implements SurfaceHolder.Ca
             throw new IllegalStateException();
         }
 
-        renderThread = new RenderThread(holder);
+        renderThread = new RenderThread(this);
     }
 
     /**
@@ -220,10 +234,10 @@ public abstract class RenderView extends SurfaceView implements SurfaceHolder.Ca
 
     //释放相关资源，防止内存泄漏
     public void release(){
-        stopAnim();
         if (getHolder() != null && getHolder().getSurface() != null) {
             getHolder().getSurface().release();
             getHolder().removeCallback(this);
         }
     }
+
 }

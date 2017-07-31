@@ -33,4 +33,13 @@
         android:layout_height="wrap_content"
         android:text="stop"
         />
+
+    <Button
+        android:id="@+id/leakTestBtn"
+        android:layout_marginTop="20dp"
+        android:layout_gravity="center"
+        android:text="Memory Leak Test"
+        android:padding="10dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
 </LinearLayout>
