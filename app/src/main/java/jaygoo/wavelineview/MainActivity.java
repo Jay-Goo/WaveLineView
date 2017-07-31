@@ -42,11 +42,19 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        if (hasFocus){
+//            waveLineView.justDrawBackground();
+        }
+    }
 
     @Override
     protected void onResume() {
         super.onResume();
-        waveLineView.onResume(true);
+        waveLineView.onResume();
+
     }
 
     @Override

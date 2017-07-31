@@ -18,7 +18,22 @@ import java.util.List;
  */
 public abstract class RenderView extends SurfaceView implements SurfaceHolder.Callback {
 
-    private boolean isAutoStartAnim = false;
+    //是否正在绘制动画
+    private boolean isStartAnim = false;
+    private final static Object surfaceLock = new Object();
+    private RenderThread renderThread;
+    /**
+     * 绘制背景，防止开始时黑屏
+     * 子View可以执行此方法
+     * @param canvas
+     */
+    protected abstract void doDrawBackground(Canvas canvas);
+    /**
+     * 渲染surfaceView的回调方法。
+     *
+     * @param canvas 画布
+     */
+    protected abstract void onRender(Canvas canvas, long millisPassed);
 
     public RenderView(Context context) {
         this(context, null);
@@ -77,19 +92,22 @@ public abstract class RenderView extends SurfaceView implements SurfaceHolder.Ca
                         if (getSurfaceHolder() != null && getRenderView() != null) {
                             Canvas canvas = getSurfaceHolder().lockCanvas();
                             if (canvas != null) {
-                                getRenderView().render(canvas, System.currentTimeMillis() - startAt);  //这里做真正绘制的事情
+                                getRenderView().doDrawBackground(canvas);
+                                if (getRenderView().isStartAnim) {
+                                    getRenderView().render(canvas, System.currentTimeMillis() - startAt);  //这里做真正绘制的事情
+                                }
                                 getSurfaceHolder().unlockCanvasAndPost(canvas);
                             }
                         }else {
                             running = false;
                         }
-                        try {
-                            Thread.sleep(SLEEP_TIME);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    }
 
+                    }
+                    try {
+                        Thread.sleep(SLEEP_TIME);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
 
             }
@@ -103,8 +121,7 @@ public abstract class RenderView extends SurfaceView implements SurfaceHolder.Ca
 
     }
 
-    private final static Object surfaceLock = new Object();
-    private RenderThread renderThread;
+
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
@@ -130,20 +147,6 @@ public abstract class RenderView extends SurfaceView implements SurfaceHolder.Ca
     }
 
 
-    /**
-     * 解锁暂停，继续执行绘制任务
-     * @param isAutoStartAnim 是否当Resume时自动启动动画
-     */
-    public void onResume(boolean isAutoStartAnim){
-        synchronized (surfaceLock){
-            this.isAutoStartAnim = isAutoStartAnim;
-            if (renderThread != null) {
-                renderThread.isPause = false;
-                surfaceLock.notifyAll();
-            }
-        }
-    }
-
     //假暂停，并没有结束Thread
     public void onPause(){
         synchronized (surfaceLock){
@@ -168,12 +171,14 @@ public abstract class RenderView extends SurfaceView implements SurfaceHolder.Ca
     }
 
     public void onWindowFocusChanged(boolean hasFocus) {
-        if (hasFocus && isAutoStartAnim){
+        if (hasFocus && isStartAnim){
             startAnim();
+        }else {
+            startThread();
         }
     }
-    /*绘图*/
 
+    /*绘图*/
     public interface IRenderer {
         void onRender(Canvas canvas, long millisPassed);
     }
@@ -194,15 +199,12 @@ public abstract class RenderView extends SurfaceView implements SurfaceHolder.Ca
         }
     }
 
-    /**
-     * 渲染surfaceView的回调方法。
-     *
-     * @param canvas 画布
-     */
-    protected void onRender(Canvas canvas, long millisPassed) {
+    public void startAnim(){
+        isStartAnim = true;
+        startThread();
     }
 
-    public void startAnim(){
+    private void startThread(){
 
         if (renderThread != null && !renderThread.running) {
             renderThread.setRun(true);
@@ -219,6 +221,7 @@ public abstract class RenderView extends SurfaceView implements SurfaceHolder.Ca
     }
 
     public void stopAnim(){
+        isStartAnim = false;
         if (renderThread != null && renderThread.running) {
             renderThread.setRun(false);
             renderThread.interrupt();

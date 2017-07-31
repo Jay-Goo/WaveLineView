@@ -52,7 +52,7 @@ public class LeakTestActivity extends Activity{
     @Override
     protected void onResume() {
         super.onResume();
-        waveLineView.onResume(true);
+        waveLineView.onResume();
     }
 
     @Override

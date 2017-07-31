@@ -125,16 +125,19 @@ public class WaveLineView extends RenderView {
     }
 
     @Override
+    protected void doDrawBackground(Canvas canvas) {
+        //绘制背景
+        canvas.drawColor(backGroundColor);
+    }
+
+    @Override
     protected void onRender(Canvas canvas, long millisPassed) {
-        super.onRender(canvas, millisPassed);
         float offset = millisPassed / offsetSpeed;
 
         if (null == samplingX){
             initDraw(canvas);
         }
 
-        //绘制背景
-        canvas.drawColor(backGroundColor);
         if (lineAnim(canvas)) {
             resetPaths();
             softerChangeVolume();
@@ -276,7 +279,7 @@ public class WaveLineView extends RenderView {
     @Override
     public void stopAnim() {
         super.stopAnim();
-//        clearDraw();
+        clearDraw();
     }
 
     //清空画布所有内容
