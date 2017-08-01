@@ -1,7 +1,9 @@
 ![这里写图片描述](http://img.blog.csdn.net/20170730214723276?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvZ29vZ2xlX2FjbWVy/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast)
 
 
-看到咱们智课技术订阅号推送了好几遍精彩的技术分享了，写的都非常好，不过还没有移动端的文章，所以今天我这里也总结了一下我最近在做的一些东西，希望能抛砖引玉，吸引我们优秀的移动端小伙伴投稿。本文实战性较强，主要目的是通过一个自定义控件的开发，引出我对自定义控件性能优化的一些思考和实践，欢迎各位喜欢移动开发的小伙伴来拍砖~
+看到咱们智课技术订阅号推送了好几遍精彩的技术分享了，写的都非常好，不过还没有移动端的文章，所以今天我这里也总结了一下我最近在做的一些东西，希望能抛砖引玉，吸引我们优秀的移动端小伙伴投稿。
+
+本文实战性较强，主要目的是通过一个自定义控件的开发，引出我对自定义控件性能优化的一些思考和实践，欢迎各位喜欢移动开发的小伙伴来拍砖~
 
 本文由于篇幅有限，只讲解思路，并没有放出大量源代码，如果对本项目感兴趣，文末会放出Demo，可以自行去Github上fork和star。
 
@@ -100,6 +102,8 @@ Android 在内存分配和释放方面，采用了 JAVA 的垃圾回收 GC 模�
 
 就本例，我通过多次创建销毁Activity，检测程序是否发生了内存泄漏。
 结果LeakCanary提示程序发生了内存泄漏，如图所示
+![这里写图片描述](https://github.com/Jay-Goo/WaveLineView/blob/master/pictures/%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F%E5%9B%BE.png)
+
 RenderThread持有了Activity的隐式context，导致Activity不能释放资源，
 追踪到代码，我们发现这样一段代码：
 
