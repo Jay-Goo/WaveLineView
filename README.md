@@ -18,7 +18,7 @@
 	}
 	
 	dependencies {
-	        compile 'com.github.Jay-Goo:WaveLineView:v1.0.2'
+	        compile 'com.github.Jay-Goo:WaveLineView:v1.0.3'
 	}
 ```
 ## Step2
