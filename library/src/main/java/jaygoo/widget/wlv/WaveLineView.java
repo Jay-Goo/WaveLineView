@@ -6,6 +6,8 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.PixelFormat;
+import android.graphics.PorterDuff;
 import android.util.AttributeSet;
 import android.util.SparseArray;
 
@@ -97,6 +99,7 @@ public class WaveLineView extends RenderView {
     //是否开启准备动画
     private boolean isOpenPrepareAnim = false;
 
+    private boolean isTransparentMode = false;
     public WaveLineView(Context context) {
         this(context, null);
     }
@@ -119,22 +122,34 @@ public class WaveLineView extends RenderView {
         fineLineWidth = (int)t.getDimension(R.styleable.WaveLineView_wlvFineLineWidth, 2);
         offsetSpeed = t.getFloat(R.styleable.WaveLineView_wlvMoveSpeed, DEFAULT_OFFSET_SPEED);
         sensibility = t.getInt(R.styleable.WaveLineView_wlvSensibility, DEFAULT_SENSIBILITY);
+        isTransparentMode = backGroundColor == Color.TRANSPARENT;
         t.recycle();
         checkVolumeValue();
         checkSensibilityValue();
+        //将RenderView放到最顶层
+        setZOrderOnTop(true);
+        if (getHolder() != null) {
+            //使窗口支持透明度
+            getHolder().setFormat(PixelFormat.TRANSLUCENT);
+        }
     }
 
     @Override
     protected void doDrawBackground(Canvas canvas) {
         //绘制背景
-        canvas.drawColor(backGroundColor);
+        if (isTransparentMode) {
+            //启用CLEAR模式，所绘制内容不会提交到画布上。
+            canvas.drawColor(backGroundColor, PorterDuff.Mode.CLEAR);
+        }else {
+            canvas.drawColor(backGroundColor);
+        }
     }
 
     @Override
     protected void onRender(Canvas canvas, long millisPassed) {
         float offset = millisPassed / offsetSpeed;
 
-        if (null == samplingX){
+        if (null == samplingX || null == mapX || null == pathFuncs){
             initDraw(canvas);
         }
 
