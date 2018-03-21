@@ -140,6 +140,9 @@ RenderThread持有了Activity的隐式context，导致Activity不能释放资源
 [https://github.com/Jay-Goo/WaveLineView](https://github.com/Jay-Goo/WaveLineView)
 欢迎各位Star，Mark
 
+# 致谢
+[Bugly—以Tencent OS录音机波形动画为实例](https://mp.weixin.qq.com/s?__biz=MzA3NTYzODYzMg==&mid=2653577211&idx=1&sn=2619c7df79f675e45e87891b7eb17669&scene=4#wechat_redirect)
 
+[DrkCore—以Tencent OS录音机波形为例](http://blog.csdn.net/drkcore/article/details/51822818)
 
 
