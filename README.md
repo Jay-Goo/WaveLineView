@@ -73,3 +73,8 @@ wlvSamplingSize|integer|采样率，动画效果越大越精细，默认64
 wlvSensibility|integer|灵敏度，范围[1,10]，越大越灵敏，默认值为5
 
 ## [原理讲解传送门](https://github.com/Jay-Goo/WaveLineView/blob/master/blog.md)
+
+# 致谢
+[Bugly—以Tencent OS录音机波形动画为实例](https://mp.weixin.qq.com/s?__biz=MzA3NTYzODYzMg==&mid=2653577211&idx=1&sn=2619c7df79f675e45e87891b7eb17669&scene=4#wechat_redirect)
+
+[DrkCore—以Tencent OS录音机波形为例](http://blog.csdn.net/drkcore/article/details/51822818)
