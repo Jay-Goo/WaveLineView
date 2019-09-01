@@ -8,6 +8,7 @@ import android.view.SurfaceView;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
+
 /**
  * ================================================
  * 作    者：JayGoo
@@ -22,12 +23,15 @@ public abstract class RenderView extends SurfaceView implements SurfaceHolder.Ca
     private boolean isStartAnim = false;
     private final static Object surfaceLock = new Object();
     private RenderThread renderThread;
+
     /**
      * 绘制背景，防止开始时黑屏
      * 子View可以执行此方法
+     *
      * @param canvas
      */
     protected abstract void doDrawBackground(Canvas canvas);
+
     /**
      * 渲染surfaceView的回调方法。
      *
@@ -57,19 +61,20 @@ public abstract class RenderView extends SurfaceView implements SurfaceHolder.Ca
         private boolean running = false;
         private boolean destoryed = false;
         private boolean isPause = false;
+
         public RenderThread(RenderView renderView) {
             super("RenderThread");
             this.renderView = new WeakReference<>(renderView);
         }
 
-        private SurfaceHolder getSurfaceHolder(){
-            if (getRenderView() != null ){
+        private SurfaceHolder getSurfaceHolder() {
+            if (getRenderView() != null) {
                 return getRenderView().getHolder();
             }
             return null;
         }
 
-        private RenderView getRenderView(){
+        private RenderView getRenderView() {
             return renderView.get();
         }
 
@@ -80,7 +85,7 @@ public abstract class RenderView extends SurfaceView implements SurfaceHolder.Ca
                 synchronized (surfaceLock) {
 
                     //这里并没有真正的结束Thread，防止部分手机连续调用同一Thread出错
-                    while (isPause){
+                    while (isPause) {
                         try {
                             surfaceLock.wait();
                         } catch (InterruptedException e) {
@@ -98,7 +103,7 @@ public abstract class RenderView extends SurfaceView implements SurfaceHolder.Ca
                                 }
                                 getSurfaceHolder().unlockCanvasAndPost(canvas);
                             }
-                        }else {
+                        } else {
                             running = false;
                         }
 
@@ -123,7 +128,6 @@ public abstract class RenderView extends SurfaceView implements SurfaceHolder.Ca
     }
 
 
-
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
         renderer = onCreateRenderer();
@@ -138,8 +142,8 @@ public abstract class RenderView extends SurfaceView implements SurfaceHolder.Ca
      * 解锁暂停，继续执行绘制任务
      * 默认当Resume时不自动启动动画
      */
-    public void onResume(){
-        synchronized (surfaceLock){
+    public void onResume() {
+        synchronized (surfaceLock) {
             if (renderThread != null) {
                 renderThread.isPause = false;
                 surfaceLock.notifyAll();
@@ -149,8 +153,8 @@ public abstract class RenderView extends SurfaceView implements SurfaceHolder.Ca
 
 
     //假暂停，并没有结束Thread
-    public void onPause(){
-        synchronized (surfaceLock){
+    public void onPause() {
+        synchronized (surfaceLock) {
             if (renderThread != null) {
                 renderThread.isPause = true;
             }
@@ -172,9 +176,9 @@ public abstract class RenderView extends SurfaceView implements SurfaceHolder.Ca
     }
 
     public void onWindowFocusChanged(boolean hasFocus) {
-        if (hasFocus && isStartAnim){
+        if (hasFocus && isStartAnim) {
             startAnim();
-        }else {
+        } else {
             startThread();
         }
     }
@@ -200,12 +204,12 @@ public abstract class RenderView extends SurfaceView implements SurfaceHolder.Ca
         }
     }
 
-    public void startAnim(){
+    public void startAnim() {
         isStartAnim = true;
         startThread();
     }
 
-    private void startThread(){
+    private void startThread() {
 
         if (renderThread != null && !renderThread.running) {
             renderThread.setRun(true);
@@ -214,14 +218,14 @@ public abstract class RenderView extends SurfaceView implements SurfaceHolder.Ca
                     renderThread.start();
                 }
 
-            }catch (RuntimeException e){
+            } catch (Exception e) {
                 e.printStackTrace();
             }
 
         }
     }
 
-    public void stopAnim(){
+    public void stopAnim() {
         isStartAnim = false;
         if (renderThread != null && renderThread.running) {
             renderThread.setRun(false);
@@ -229,7 +233,7 @@ public abstract class RenderView extends SurfaceView implements SurfaceHolder.Ca
         }
     }
 
-    public boolean isRunning(){
+    public boolean isRunning() {
         if (renderThread != null) {
             return renderThread.running;
         }
@@ -237,7 +241,7 @@ public abstract class RenderView extends SurfaceView implements SurfaceHolder.Ca
     }
 
     //释放相关资源，防止内存泄漏
-    public void release(){
+    public void release() {
         if (getHolder() != null && getHolder().getSurface() != null) {
             getHolder().getSurface().release();
             getHolder().removeCallback(this);

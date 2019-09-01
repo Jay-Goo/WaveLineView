@@ -167,17 +167,16 @@ public class WaveLineView extends RenderView {
             resetPaths();
             softerChangeVolume();
 
-            //双重判断确保必要参数正常
-            if (isParametersNull()) {
-                initDraw(canvas);
-            }
-            if (isParametersNull()) {
-                return;
-            }
-
             //波形函数的值
             float curY;
             for (int i = 0; i <= samplingSize; i++) {
+                //双重判断确保必要参数正常
+                if (isParametersNull()) {
+                    initDraw(canvas);
+                    if (isParametersNull()) {
+                        return;
+                    }
+                }
                 float x = samplingX[i];
                 curY = (float) (amplitude * calcValue(mapX[i], offset));
                 for (int n = 0; n < paths.size(); n++) {
@@ -415,6 +414,7 @@ public class WaveLineView extends RenderView {
 
     public void setBackGroundColor(int backGroundColor) {
         this.backGroundColor = backGroundColor;
+        this.isTransparentMode = (backGroundColor == Color.TRANSPARENT);
     }
 
     public void setLineColor(int lineColor) {
