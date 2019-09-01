@@ -9,6 +9,7 @@ import android.graphics.Path;
 import android.graphics.PixelFormat;
 import android.graphics.PorterDuff;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.util.SparseArray;
 
 import java.util.ArrayList;
@@ -24,9 +25,9 @@ import java.util.List;
  */
 public class WaveLineView extends RenderView {
 
-    private final int DEFAULT_SAMPLING_SIZE = 64;
-    private final float DEFAULT_OFFSET_SPEED =  250F;
-    private final int DEFAULT_SENSIBILITY =  5;
+    private final static int DEFAULT_SAMPLING_SIZE = 64;
+    private final static float DEFAULT_OFFSET_SPEED = 250F;
+    private final static int DEFAULT_SENSIBILITY = 5;
 
     //采样点的数量，越高越精细，但是高于一定限度肉眼很难分辨，越高绘制效率越低
     private int samplingSize;
@@ -65,6 +66,7 @@ public class WaveLineView extends RenderView {
     }
 
     private List<Path> paths = new ArrayList<>();
+
     {
         for (int i = 0; i < 4; i++) {
             paths.add(new Path());
@@ -81,7 +83,7 @@ public class WaveLineView extends RenderView {
     //采样点位置映射到[-2,2]之间
     private float[] mapX;
     //画布宽高
-    private int width,height;
+    private int width, height;
     //画布中心的高度
     private int centerHeight;
     //振幅
@@ -100,6 +102,7 @@ public class WaveLineView extends RenderView {
     private boolean isOpenPrepareAnim = false;
 
     private boolean isTransparentMode = false;
+
     public WaveLineView(Context context) {
         this(context, null);
     }
@@ -114,12 +117,12 @@ public class WaveLineView extends RenderView {
     }
 
     private void initAttr(AttributeSet attrs) {
-        TypedArray t = getContext().obtainStyledAttributes(attrs,R.styleable.WaveLineView);
+        TypedArray t = getContext().obtainStyledAttributes(attrs, R.styleable.WaveLineView);
         backGroundColor = t.getColor(R.styleable.WaveLineView_wlvBackgroundColor, Color.WHITE);
         samplingSize = t.getInt(R.styleable.WaveLineView_wlvSamplingSize, DEFAULT_SAMPLING_SIZE);
         lineColor = t.getColor(R.styleable.WaveLineView_wlvLineColor, Color.parseColor("#2ED184"));
-        thickLineWidth = (int)t.getDimension(R.styleable.WaveLineView_wlvThickLineWidth, 6);
-        fineLineWidth = (int)t.getDimension(R.styleable.WaveLineView_wlvFineLineWidth, 2);
+        thickLineWidth = (int) t.getDimension(R.styleable.WaveLineView_wlvThickLineWidth, 6);
+        fineLineWidth = (int) t.getDimension(R.styleable.WaveLineView_wlvFineLineWidth, 2);
         offsetSpeed = t.getFloat(R.styleable.WaveLineView_wlvMoveSpeed, DEFAULT_OFFSET_SPEED);
         sensibility = t.getInt(R.styleable.WaveLineView_wlvSensibility, DEFAULT_SENSIBILITY);
         isTransparentMode = backGroundColor == Color.TRANSPARENT;
@@ -140,22 +143,37 @@ public class WaveLineView extends RenderView {
         if (isTransparentMode) {
             //启用CLEAR模式，所绘制内容不会提交到画布上。
             canvas.drawColor(backGroundColor, PorterDuff.Mode.CLEAR);
-        }else {
+        } else {
             canvas.drawColor(backGroundColor);
         }
+    }
+
+    private boolean isParametersNull() {
+        if (null == samplingX || null == mapX || null == pathFuncs) {
+            return true;
+        }
+        return false;
     }
 
     @Override
     protected void onRender(Canvas canvas, long millisPassed) {
         float offset = millisPassed / offsetSpeed;
 
-        if (null == samplingX || null == mapX || null == pathFuncs){
+        if (isParametersNull()) {
             initDraw(canvas);
         }
 
         if (lineAnim(canvas)) {
             resetPaths();
             softerChangeVolume();
+
+            //双重判断确保必要参数正常
+            if (isParametersNull()) {
+                initDraw(canvas);
+            }
+            if (isParametersNull()) {
+                return;
+            }
 
             //波形函数的值
             float curY;
@@ -176,46 +194,44 @@ public class WaveLineView extends RenderView {
 
             //绘制曲线
             for (int n = 0; n < paths.size(); n++) {
-
                 if (n == 0) {
                     paint.setStrokeWidth(thickLineWidth);
-                    paint.setAlpha((int)(255 * alphaInAnim()));
+                    paint.setAlpha((int) (255 * alphaInAnim()));
                 } else {
                     paint.setStrokeWidth(fineLineWidth);
-                    paint.setAlpha((int)(100 * alphaInAnim()));
+                    paint.setAlpha((int) (100 * alphaInAnim()));
                 }
                 canvas.drawPath(paths.get(n), paint);
             }
-
         }
 
     }
 
     //检查音量是否合法
-    private void checkVolumeValue(){
-        if (targetVolume > 100)targetVolume = 100;
+    private void checkVolumeValue() {
+        if (targetVolume > 100) targetVolume = 100;
     }
 
     //检查灵敏度值是否合法
-    private void checkSensibilityValue(){
-        if (sensibility > 10)sensibility = 10;
-        if (sensibility < 1)sensibility = 1;
+    private void checkSensibilityValue() {
+        if (sensibility > 10) sensibility = 10;
+        if (sensibility < 1) sensibility = 1;
     }
 
     /**
      * 使曲线振幅有较大改变时动画过渡自然
      */
-    private void softerChangeVolume(){
+    private void softerChangeVolume() {
         //这里减去perVolume是为了防止volume频繁在targetVolume上下抖动
-        if (volume < targetVolume - perVolume){
+        if (volume < targetVolume - perVolume) {
             volume += perVolume;
-        }else if (volume > targetVolume + perVolume){
-            if (volume < perVolume * 2){
+        } else if (volume > targetVolume + perVolume) {
+            if (volume < perVolume * 2) {
                 volume = perVolume * 2;
-            }else {
+            } else {
                 volume -= perVolume;
             }
-        }else {
+        } else {
             volume = targetVolume;
         }
 
@@ -223,13 +239,14 @@ public class WaveLineView extends RenderView {
 
     /**
      * 渐入动画
+     *
      * @return progress of animation
      */
     private float alphaInAnim() {
-        if (!isOpenPrepareAnim)return 1;
-        if (prepareAlpha < 1f){
+        if (!isOpenPrepareAnim) return 1;
+        if (prepareAlpha < 1f) {
             prepareAlpha += 0.02f;
-        }else {
+        } else {
             prepareAlpha = 1;
         }
         return prepareAlpha;
@@ -237,29 +254,29 @@ public class WaveLineView extends RenderView {
 
     /**
      * 连线动画
+     *
      * @param canvas
      * @return whether animation is end
      */
     private boolean lineAnim(Canvas canvas) {
-        if (isPrepareLineAnimEnd || !isOpenPrepareAnim)return true;
+        if (isPrepareLineAnimEnd || !isOpenPrepareAnim) return true;
         paths.get(0).moveTo(0, centerHeight);
         paths.get(1).moveTo(width, centerHeight);
 
         for (int i = 1; i <= samplingSize; i++) {
-            float x = i * lineAnimX / samplingSize;
+            float x = 1f * i * lineAnimX / samplingSize;
             paths.get(0).lineTo(x, centerHeight);
             paths.get(1).lineTo(width - x, centerHeight);
-
         }
 
-        paths.get(0).moveTo(width/2, centerHeight);
-        paths.get(1).moveTo(width/2, centerHeight);
+        paths.get(0).moveTo(width / 2f, centerHeight);
+        paths.get(1).moveTo(width / 2f, centerHeight);
 
         lineAnimX += width / 60;
         canvas.drawPath(paths.get(0), paint);
         canvas.drawPath(paths.get(1), paint);
 
-        if (lineAnimX > width / 2){
+        if (lineAnimX > width / 2) {
             isPrepareLineAnimEnd = true;
             return true;
         }
@@ -269,7 +286,7 @@ public class WaveLineView extends RenderView {
     /**
      * 重置path
      */
-    private void resetPaths(){
+    private void resetPaths() {
         for (int i = 0; i < paths.size(); i++) {
             paths.get(i).rewind();
             paths.get(i).moveTo(0, centerHeight);
@@ -277,7 +294,7 @@ public class WaveLineView extends RenderView {
     }
 
     //初始化参数
-    private void initParameters(){
+    private void initParameters() {
         lineAnimX = 0;
         prepareAlpha = 0f;
         isPrepareLineAnimEnd = false;
@@ -298,18 +315,18 @@ public class WaveLineView extends RenderView {
     }
 
     //清空画布所有内容
-    public void clearDraw(){
+    public void clearDraw() {
         Canvas canvas = null;
-        try{
+        try {
             canvas = getHolder().lockCanvas(null);
             canvas.drawColor(backGroundColor);
             resetPaths();
-            for (int i=0; i< paths.size(); i++){
-                canvas.drawPath(paths.get(i),paint);
+            for (int i = 0; i < paths.size(); i++) {
+                canvas.drawPath(paths.get(i), paint);
             }
-        }catch(Exception e){
-        }finally{
-            if(canvas != null){
+        } catch (Exception e) {
+        } finally {
+            if (canvas != null) {
                 getHolder().unlockCanvasAndPost(canvas);
             }
         }
@@ -317,9 +334,11 @@ public class WaveLineView extends RenderView {
 
     //初始化绘制参数
     private void initDraw(Canvas canvas) {
-
         width = canvas.getWidth();
         height = canvas.getHeight();
+
+        if (width == 0 || height == 0 || samplingSize == 0) return;
+
         centerHeight = height >> 1;
         //振幅为高度的1/4
         amplitude = height / 3.0f;
@@ -332,14 +351,14 @@ public class WaveLineView extends RenderView {
         samplingX = new float[samplingSize + 1];
         mapX = new float[samplingSize + 1];
         //确定采样点之间的间距
-        float gap = width / (float)samplingSize;
+        float gap = width / (float) samplingSize;
         //采样点的位置
         float x;
-        for (int i = 0; i <= samplingSize; i++){
+        for (int i = 0; i <= samplingSize; i++) {
             x = i * gap;
             samplingX[i] = x;
             //将采样点映射到[-2，2]
-            mapX[i] = (x / (float)width) * 4 - 2;
+            mapX[i] = (x / (float) width) * 4 - 2;
         }
 
         paint.setStyle(Paint.Style.STROKE);
@@ -349,8 +368,9 @@ public class WaveLineView extends RenderView {
 
     /**
      * 计算波形函数中x对应的y值
-     *
+     * <p>
      * 使用稀疏矩阵进行暂存计算好的衰减系数值，下次使用时直接查找，减少计算量
+     *
      * @param mapX   换算到[-2,2]之间的x值
      * @param offset 偏移量
      * @return [-1, 1]
@@ -360,19 +380,20 @@ public class WaveLineView extends RenderView {
         offset %= 2;
         double sinFunc = Math.sin(Math.PI * mapX - offset * Math.PI);
         double recessionFunc;
-        if(recessionFuncs.indexOfKey(keyX) >= 0 ){
+        if (recessionFuncs.indexOfKey(keyX) >= 0) {
             recessionFunc = recessionFuncs.get(keyX);
-        }else {
+        } else {
             recessionFunc = 4 / (4 + Math.pow(mapX, 4));
-            recessionFuncs.put(keyX,recessionFunc);
+            recessionFuncs.put(keyX, recessionFunc);
         }
-        return sinFunc * recessionFunc ;
+        return sinFunc * recessionFunc;
     }
 
     /**
-     *  the wave line animation move speed from left to right
-     *  you can use negative number to make the animation from right to left
-     *  the default value is 290F,the smaller, the faster
+     * the wave line animation move speed from left to right
+     * you can use negative number to make the animation from right to left
+     * the default value is 290F,the smaller, the faster
+     *
      * @param moveSpeed
      */
     public void setMoveSpeed(float moveSpeed) {
@@ -382,6 +403,7 @@ public class WaveLineView extends RenderView {
 
     /**
      * User set volume, [0,100]
+     *
      * @param volume
      */
     public void setVolume(int volume) {
@@ -400,8 +422,9 @@ public class WaveLineView extends RenderView {
     }
 
     /**
-     *  Sensitivity, the bigger the more sensitive [1,10]
-        the default value is 5
+     * Sensitivity, the bigger the more sensitive [1,10]
+     * the default value is 5
+     *
      * @param sensibility
      */
     public void setSensibility(int sensibility) {
